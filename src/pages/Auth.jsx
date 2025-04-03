@@ -1,10 +1,42 @@
-import React from 'react'
+import React, { useState } from 'react'
 import authImg from '../assets/authImg.png'
 import { Form, FloatingLabel } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { registerAPI } from '../services/allAPI'
 
 
 const Auth = ({insideRegister}) => {
+  const navigate = useNavigate()
+  const [userInput, setUserInput] = useState({
+    username:"",email:"",password:""
+  })
+  console.log(userInput);
+
+  const register = async (e)=>{
+    e.preventDefault()
+    if(userInput.username && userInput.password && userInput.email){
+      // api call
+      try {
+        const result = await registerAPI(userInput)
+        if(result.status==200){
+          alert(`Welcome ${result.data?.username}, Please login to explore our projects!!!`)
+          navigate("/login")
+          setUserInput({username:"" ,email:"" ,password:"" })
+        }else{
+          if(result.response.status==406){
+            alert(result.response.data)
+            setUserInput({username:"",email:"",password:""})
+          }
+        }
+      } catch (error) {
+        console.log(error);
+           
+      }
+    }else{
+      alert("Please fill the form completely!!!")
+    }
+  }
+  
   return (
     <div style={{minHeight:'100vh', width:'100%'}} className='d-flex justify-content-center align-items-center'>
       <div className='container w-75'>
@@ -20,19 +52,19 @@ const Auth = ({insideRegister}) => {
                 {
                   insideRegister &&
                   <FloatingLabel controlId="floatingInputUsername" label="Username" className="mb-3">
-                    <Form.Control type="text" placeholder="Username" />
+                    <Form.Control value={userInput.username} onChange={e=>setUserInput({...userInput,username:e.target.value})} type="text" placeholder="Username" />
                   </FloatingLabel>
                 }  
                <FloatingLabel controlId="floatingInput" label="Email address" className="mb-3">
-                  <Form.Control type="email" placeholder="name@example.com" />
+                  <Form.Control value={userInput.email} onChange={e=>setUserInput({...userInput,email:e.target.value})} type="email" placeholder="name@example.com" />
                </FloatingLabel>
                <FloatingLabel controlId="floatingPassword" label="Password">
-                  <Form.Control type="password" placeholder="Password" />
+                  <Form.Control value={userInput.password} onChange={e=>setUserInput({...userInput,password:e.target.value})} type="password" placeholder="Password" />
                </FloatingLabel>
                {
                 insideRegister ?
                 <div className="mt-3">
-                  <button className='btn btn-primary mb-2'>Register</button>
+                  <button onClick={register} className='btn btn-primary mb-2'>Register</button>
                   <p>Existing User? Please Click here to <Link to={'/login'}>Login</Link></p>
                 </div>
                 :
